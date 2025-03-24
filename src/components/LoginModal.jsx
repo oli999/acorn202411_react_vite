@@ -42,6 +42,25 @@ function LoginModal(props) {
             dispatch({type:"LOGIN_MODAL", payload:{show:false}});
             //에러 메세지 없애기
             setErrorMsg(null);
+            
+            const exp = decoded.exp * 1000; 
+            const now = Date.now();
+            const remainingTime = exp - now;
+            //자동 로그아웃 예약
+            const logoutTimer=setTimeout(()=>{
+                doLogout();
+            }, remainingTime);
+            
+            //로그아웃 타이머를 store 에 등록
+            dispatch({
+                type:"LOGOUT_TIMER",
+                payload:logoutTimer
+            });
+            const doLogout = () => {
+                delete localStorage.token;
+                dispatch({ type: 'USER_INFO', payload: null });
+                alert('토큰이 만료되어 자동 로그아웃 되었습니다.');
+            };
         })
         .catch(error=>{
             console.log(error);

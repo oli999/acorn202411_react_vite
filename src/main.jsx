@@ -12,7 +12,8 @@ const initState={
   loginModal:{
     title:"",
     show:false
-  }
+  },
+  logoutTimer:null
 };
 
 //reducer 함수
@@ -28,6 +29,11 @@ const reducer = (state=initState, action)=>{
       ...state,
       loginModal:action.payload
     }
+  }else if(action.type === "LOGOUT_TIMER"){
+    newState={
+      ...state,
+      logoutTimer:action.payload
+    };
   }else{
     newState=state;
   }
