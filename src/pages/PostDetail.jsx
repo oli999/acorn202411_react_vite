@@ -209,6 +209,10 @@ function PostDetail(props) {
 function CommentLi({postNum, comment, onRefresh}){
     //로그인된 userName 얻어내기 (로그인 상태가 아니면 null)
     const userName = useSelector(state => state.userInfo && state.userInfo.userName);
+    //대댓글 form 상태 관리
+    const [insertForm, setInsertForm] = useState(false);
+    //댓글 수정 form 상태 관리
+    const [updateForm, setUpdateForm] = useState(false);
 
     // 프로필 이미지 처리
     const profileImage = comment.profileImage ? 
@@ -218,15 +222,7 @@ function CommentLi({postNum, comment, onRefresh}){
             <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
             <path fillRule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
         </svg>; 
-                
-    /*
-        link 에 대입 되는 값은  false 또는 a 요소 2개가 들어 있는 jsx 객체가 대입된다.
-        react 는 boolean 값은 UI 에 랜더링하지 않는다.
-    */
-    const link = userName === comment.writer && <>
-        <button className={cx("update-link")} >수정</button>
-        <button className={cx("delete-link")} >삭제</button>
-    </>;
+            
     
     //대댓글 등록폼 submit 이벤트 처리
     const handleReInsertSubmit = (e)=>{
@@ -238,6 +234,7 @@ function CommentLi({postNum, comment, onRefresh}){
         api.post(`/posts/${postNum}/comments`, formObject)
         .then(res=>{
             onRefresh();
+            setInsertForm(false);
         })
         .catch(error=>console.log(error));
     };
@@ -247,16 +244,41 @@ function CommentLi({postNum, comment, onRefresh}){
         //폼에 입력한 내용을 object 로 얻어낸다.
         const formData=new FormData(e.target);
         const formObject=Object.fromEntries(formData.entries());
+        console.log(formObject);
         api.patch(`/posts/${postNum}/comments`, formObject)
         .then(res=>{
             onRefresh();
+            setUpdateForm(false);
         })
         .catch(error=>console.log(error));
     };
+    //답글 버튼을 눌렀을때 실행할 함수 
+    const handleInsertButton = ()=>{
+        setInsertForm(!insertForm);
+    }
+    //수정 버튼을 눌렀을때 실행할 함수 
+    const handleUpdateButton = ()=>{
+        setUpdateForm(!updateForm);
+    }
+    //삭제 버튼을 눌렀을때 실행할 함수
+    const handleDeleteButton = ()=>{
+
+    }
+
+    /*
+        link 에 대입 되는 값은  false 또는 a 요소 2개가 들어 있는 jsx 객체가 대입된다.
+        react 는 boolean 값은 UI 에 랜더링하지 않는다.
+    */
+    const link = userName === comment.writer && <>
+        <button className={cx("update-link")} onClick={handleUpdateButton}>
+            {updateForm ? "수정취소" : "수정"}
+        </button>
+        <button className={cx("delete-link")} onClick={handleDeleteButton}>삭제</button>
+    </>;
 
     return( 
     <>
-        <li>
+        <li className={cx({"indent":comment.num !== comment.parentNum})}>
         { comment.deleted === "yes" ?
             <>
             	<svg style={{display:comment.num !== comment.parentNum ? "inline":"none"}}  
@@ -284,7 +306,9 @@ function CommentLi({postNum, comment, onRefresh}){
                             </div>
                         </div>
                         <div className={cx("comment-actions")}>
-                            <button className={cx("reply-link")}>답글</button>
+                            <button className={cx("reply-link")} onClick={handleInsertButton}>
+                                {insertForm ? "취소" : "답글"}
+                            </button>
                             {link}
                         </div>
                     </dt>
@@ -292,18 +316,22 @@ function CommentLi({postNum, comment, onRefresh}){
 						<pre>{comment.content}</pre>
 					</dd>
 				</dl>
-				<form onSubmit={handleReInsertSubmit} className={cx("re-insert-form")}  method="post">
-					<input type="hidden" name="postNum" defaultValue={postNum}/>
-					<input type="hidden" name="targetWriter" defaultValue={comment.writer }/>
-					<input type="hidden" name="parentNum" defaultValue={comment.parentNum }/>
-					<textarea name="content"></textarea>
-					<button type="submit">등록</button>
-				</form>
-				<form onSubmit={handleUpdateSubmit}  className={cx("update-form")}  method="post">
-					<input type="hidden" name="num" defaultValue={comment.num}/>
-					<textarea name="content" defaultValue={comment.content}></textarea>
-					<button type="submit">수정확인</button>
-				</form>	
+				{   insertForm &&
+                    <form onSubmit={handleReInsertSubmit} className={cx("re-insert-form")}  method="post">
+                        <input type="hidden" name="postNum" defaultValue={postNum}/>
+                        <input type="hidden" name="targetWriter" defaultValue={comment.writer }/>
+                        <input type="hidden" name="parentNum" defaultValue={comment.parentNum }/>
+                        <textarea name="content"></textarea>
+                        <button type="submit">등록</button>
+                    </form>
+                }
+                {   updateForm &&
+                    <form onSubmit={handleUpdateSubmit}  className={cx("update-form")}  method="post">
+                        <input type="hidden" name="num" defaultValue={comment.num}/>
+                        <textarea name="content" defaultValue={comment.content}></textarea>
+                        <button type="submit">수정확인</button>
+                    </form>
+                }	
             </>
         }
         </li>
