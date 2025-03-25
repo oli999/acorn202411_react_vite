@@ -11,7 +11,8 @@ const initState={
   userInfo:null,
   loginModal:{
     title:"",
-    show:false
+    show:false,
+    url:null
   },
   logoutTimer:null
 };
@@ -46,10 +47,10 @@ const store = createStore(reducer);
 // id 가 root 인 div 안을  App.js 에서 리턴해준 component 로 체우기 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <React.StrictMode>
+  
     <Provider store={store}>
       <RouterProvider router={router}/>
     </Provider> 
-  </React.StrictMode>
+ 
 );
 

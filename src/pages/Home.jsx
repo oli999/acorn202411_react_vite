@@ -1,14 +1,11 @@
 // src/pages/Home.jsx
 
-import axios from 'axios';
-import React, { useRef, useState } from 'react';
-import { Alert, Button, Form } from 'react-bootstrap';
-import MarkDown from 'react-markdown';
+
+import React from 'react';
 import api from '../api';
+import { Link } from 'react-router-dom';
 
-function Home(props) {
-    
-
+function Home() {
     return (
         <div>
             <h1>인덱스 페이지 입니다.</h1>
@@ -17,10 +14,13 @@ function Home(props) {
                 .then(res=>{
                     alert(res.data);
                 })
-                .catch(error=>{
+                .catch(()=>{
                     alert("응답하지 않음");
                 });
-            }}>Ping 요청 해보기</button> 
+            }}>Ping 요청 해보기</button>
+            <ul>
+                <li><Link to="/posts/new?a=10&b=20">Post 에 글 남기기</Link></li>
+            </ul> 
         </div>
     );
 }
